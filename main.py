@@ -1,34 +1,31 @@
 import pandas as pd
+
+parkinsons_df = pd.read_csv('parkinsons.csv')
+parkinsons_df= parkinsons_df.dropna()
+parkinsons_df.head()
+selected_features = ['PPE', 'DFA']
+target= ['status']
+x=parkinsons_df[selected_features]
+y=parkinsons_df[target]
+
+from sklearn.preprocessing import MinMaxScaler
+scaler = MinMaxScaler()
+x_scaled = scaler.fit_transform(x)
+
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score, classification_report
-import matplotlib.pyplot as plt
+x_train, x_test, y_train, y_test = train_test_split(x_scaled, y, test_size=0.2, random_state=42)
 
-# Load the dataset
-file_path = '/content/parkinsons.csv'  # Update with your file path
-df = pd.read_csv(file_path)
-df = df.dropna()
+from sklearn.svm import SVC
+svc = SVC ()
+svc.fit(x_train, y_train)
 
-# Define features (DFA and PPE) and target (status)
-X = df[['DFA', 'PPE']]  # Replace with exact column names for HNR and PPE
-y = df['status']  # Target column (1 = Parkinson's, 0 = Healthy)
-
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Scale the features (DFA and PPE) for better model performance
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
-
-# Train a K-Nearest Neighbors (KNN) Classifier
-knn = KNeighborsClassifier(n_neighbors=7)  # Use 5 neighbors
-knn.fit(X_train_scaled, y_train)
-
-# Make predictions
-y_pred = knn.predict(X_test_scaled)
-
+from sklearn.metrics import accuracy_score
+y_pred = svc.predict(x_test)
 accuracy = accuracy_score(y_test, y_pred)
-print(f"Accuracy: {accuracy}")
+print(f"Accuracy: {accuracy}")
+
+
+import joblib
+
+joblib.dump(svc, 'svc_model.joblib')
 
